@@ -15,6 +15,8 @@ public:
 
 	const int Size() const { return S; }
 	void fill(int value) { for (size_t i = 0; i < S; i++) data[i] = value; }
+
+	
 };
 
 
