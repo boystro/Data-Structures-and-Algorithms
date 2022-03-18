@@ -17,6 +17,7 @@ namespace BinaryTree
 	void rightView(const std::shared_ptr<BinaryTreeNode>, std::vector<int>&);
 	void leftView(const std::shared_ptr<BinaryTreeNode>, std::vector<int>&);
 	void flattenTree(const std::shared_ptr<BinaryTreeNode>);
+	void addBinarySearchTreeNode(std::shared_ptr<BinaryTreeNode>&, int);
 	
 	int sumOfNodesAtNthLevel(const std::shared_ptr<BinaryTreeNode>, int N);
 	int sumOfAllNodes(const std::shared_ptr<BinaryTreeNode>);
@@ -36,6 +37,7 @@ namespace BinaryTree
 
 	BinaryTree binaryTreeFromPreOrderAndInOrderArray(std::vector<int>&, std::vector<int>&);
 	BinaryTree binaryTreeFromPostOrderAndInOrderArray(std::vector<int>&, std::vector<int>&);
+	BinaryTree binarySearchTree(std::vector<int>&);
 
 }
 
@@ -323,7 +325,7 @@ namespace BinaryTree
 	}
 
 	// Flatten a binary tree or -> converting BT to Linked List by rearranging the nodes
-	void flattenTree(std::shared_ptr<BinaryTreeNode> root)
+	void flattenTree(const std::shared_ptr<BinaryTreeNode> root)
 	{
 		if (root == nullptr || (root->left == nullptr && root->right == nullptr)) return;
 
@@ -354,6 +356,22 @@ namespace BinaryTree
 
 		findNodesInSubtreeAtDistance(root->left, k - 1, vec);
 		findNodesInSubtreeAtDistance(root->right, k - 1, vec);
+	}
+
+	// Add Binary Search Tree (bst) node
+	void addBinarySearchTreeNode(std::shared_ptr<BinaryTreeNode>& root, int val)
+	{
+		if (root == nullptr)
+		{
+			root = std::shared_ptr<BinaryTreeNode>(new BinaryTreeNode(val));
+			std::cout << root->data;
+			return;
+		}
+
+		if (val < root->data)
+			addBinarySearchTreeNode(root->left, val);
+		if (val >= root->data)
+			addBinarySearchTreeNode(root->right, val);
 	}
 
 
@@ -601,6 +619,16 @@ namespace BinaryTree
 		if (postOrder.size() != postOrder.size()) return BinaryTree();
 		return BinaryTree(rootNodeFromPostOrderAndInOrderArray(postOrder, inOrder, 0, postOrder.size() - 1));
 	}
+
+	// Generate a Binary Search Tree
+	BinaryTree binarySearchTree(std::vector<int>& arr)
+	{
+		BinaryTree r;
+		for (int data : arr)
+			addBinarySearchTreeNode(r.root, data);
+
+		return r;
+	}
 	
 }
 
@@ -667,9 +695,16 @@ void testBinaryTree4()
 	bt.root->left->right = std::shared_ptr<BinaryTree::BinaryTreeNode>(new BinaryTree::BinaryTreeNode(3));
 	bt.root->right->right = std::shared_ptr<BinaryTree::BinaryTreeNode>(new BinaryTree::BinaryTreeNode(6));
 
-	std::cout << std::endl;
 	bt.flatten();
 	bt.logPreOrderTraversal();
+}
+
+void testBinaryTree5()
+{
+	std::vector<int> arr = { 5, 1, 3, 4, 2, 7 };
+	BinaryTree::BinaryTree bt = BinaryTree::binarySearchTree(arr);
+
+	bt.log();
 }
 
 int main()
@@ -678,4 +713,5 @@ int main()
 	testBinaryTree2();
 	testBinaryTree3();
 	testBinaryTree4();
+	testBinaryTree5();
 }
