@@ -13,19 +13,26 @@ namespace BinaryTree
 	void preOrderTraversal(const std::shared_ptr<BinaryTreeNode>, std::vector<int>&);
 	void postOrderTraversal(const std::shared_ptr<BinaryTreeNode>, std::vector<int>&);
 	void levelOrderTraversal(const std::shared_ptr<BinaryTreeNode>, std::vector<int>&);
+	void sumReplacement(const std::shared_ptr<BinaryTreeNode>);
+	void rightView(const std::shared_ptr<BinaryTreeNode>, std::vector<int>&);
+	void leftView(const std::shared_ptr<BinaryTreeNode>, std::vector<int>&);
+	void flattenTree(const std::shared_ptr<BinaryTreeNode>);
 	
 	int sumOfNodesAtNthLevel(const std::shared_ptr<BinaryTreeNode>, int N);
 	int sumOfAllNodes(const std::shared_ptr<BinaryTreeNode>);
 	int countNodes(const std::shared_ptr<BinaryTreeNode>);
 	int height(const std::shared_ptr<BinaryTreeNode>);
-	int diameter(const std::shared_ptr<BinaryTreeNode>); // O(n^2)
-	int diameter(const std::shared_ptr<BinaryTreeNode>, std::shared_ptr<int>); // O(n)
-	
-	int diameter(const std::shared_ptr<BinaryTreeNode>, int*);
+	int diameter(const std::shared_ptr<BinaryTreeNode>); // O(n^2)	
+	int diameter(const std::shared_ptr<BinaryTreeNode>, int*); // O(n)
+	int findDistance(const std::shared_ptr<BinaryTreeNode>, int, int);
+	int distanceBetweenNodes(const std::shared_ptr<BinaryTreeNode>, int, int);
 
+	bool isBalanced(const std::shared_ptr<BinaryTreeNode>); // O(n^2)
+	bool isBalanced(const std::shared_ptr<BinaryTreeNode>, int*); // O(n)
 
 	std::shared_ptr<BinaryTreeNode> rootNodeFromPreOrderAndInOrderArray(std::vector<int>&, std::vector<int>&, int, int);
 	std::shared_ptr<BinaryTreeNode> rootNodeFromPostOrderAndInOrderArray(std::vector<int>&, std::vector<int>&, int, int);
+	std::shared_ptr<BinaryTreeNode> lowestCommonAncestor(const std::shared_ptr<BinaryTreeNode>, int, int);
 
 	BinaryTree binaryTreeFromPreOrderAndInOrderArray(std::vector<int>&, std::vector<int>&);
 	BinaryTree binaryTreeFromPostOrderAndInOrderArray(std::vector<int>&, std::vector<int>&);
@@ -103,6 +110,36 @@ namespace BinaryTree
 			logLevelOrderTraversal();
 		}
 
+		const void logRightView() const
+		{
+			std::cout << "[Right View]\n";
+			std::vector<int> vec;
+			rightView(root, vec);
+			for (int data : vec) std::cout << data << " ";
+			std::cout << std::endl;
+		}
+
+		const void logLeftView() const
+		{
+			std::cout << "[Left View]\n";
+			std::vector<int> vec;
+			leftView(root, vec);
+			for (int data : vec) std::cout << data << " ";
+			std::cout << std::endl;
+		}
+
+
+		void doSumReplacement()
+		{
+			sumReplacement(root);
+		}
+
+		void flatten()
+		{
+			flattenTree(root);
+		}
+
+
 		int getSumOfNodesAtNthLevel(int level) const
 		{ return sumOfNodesAtNthLevel(root, level); }
 
@@ -125,6 +162,18 @@ namespace BinaryTree
 		{
 			int h=0;
 			return diameter(root, &h);
+		}
+
+		int getDistanceBetweenNodes(int n1, int n2) const
+		{
+			return distanceBetweenNodes(root, n1, n2);
+		}
+
+
+		bool isTreeBalanced()
+		{
+			int height=0;
+			return isBalanced(root, &height);
 		}
 	};
 
@@ -197,6 +246,134 @@ namespace BinaryTree
 			else if (!q.empty())
 				q.push(nullptr);
 		}
+	}
+
+	// Replace each node with sum of all child nodes and self
+	void sumReplacement(const std::shared_ptr<BinaryTreeNode> root)
+	{
+		if (root == nullptr)
+			return;
+
+		sumReplacement(root->left);
+		sumReplacement(root->right);
+
+		if (root->left != nullptr)
+			root->data += root->left->data;
+
+		if (root->right != nullptr)
+			root->data += root->right->data;
+	}
+
+	// Right View of Binary Tree
+	void rightView(const std::shared_ptr<BinaryTreeNode> root, std::vector<int>& vec)
+	{
+		if (root == nullptr)
+			return;
+
+		std::queue<std::shared_ptr<BinaryTreeNode>> q;
+		q.push(root);
+
+		while (!q.empty())
+		{
+			int n = q.size();
+			for (int i = 0; i < n; i++)
+			{
+				std::shared_ptr<BinaryTreeNode> currentNode = q.front();
+				q.pop();
+				
+				if (i == n - 1)
+					vec.emplace_back(currentNode->data);
+
+				if (currentNode->left != nullptr)
+					q.push(currentNode->left);
+
+				if (currentNode->right != nullptr)
+					q.push(currentNode->right);
+			}
+		}
+	}
+
+	// Left View of Binary Tree
+	void leftView(const std::shared_ptr<BinaryTreeNode> root, std::vector<int>& vec)
+	{
+		if (root == nullptr)
+			return;
+
+		std::queue<std::shared_ptr<BinaryTreeNode>> q;
+		q.push(root);
+
+		while (!q.empty())
+		{
+			int n = q.size();
+			for (int i = 0; i < n; i++)
+			{
+				std::shared_ptr<BinaryTreeNode> currentNode = q.front();
+				q.pop();
+
+				if (i == 0)
+					vec.emplace_back(currentNode->data);
+
+				if (currentNode->left != nullptr)
+					q.push(currentNode->left);
+
+				if (currentNode->right != nullptr)
+					q.push(currentNode->right);
+			}
+		}
+	}
+
+	// Flatten a binary tree or -> converting BT to Linked List by rearranging the nodes
+	void flattenTree(std::shared_ptr<BinaryTreeNode> root)
+	{
+		if (root == nullptr || (root->left == nullptr && root->right == nullptr)) return;
+
+		if (root->left != nullptr)
+		{
+			flattenTree(root->left);
+			std::shared_ptr<BinaryTreeNode> temp = root->right;
+			root->right = root->left;
+			root->left = nullptr;
+
+			std::shared_ptr<BinaryTreeNode> temp2=root->right;
+			while (temp2->right != nullptr) temp2 = temp2->right;
+			temp2->right = temp;
+		}
+		flattenTree(root->right);
+	}
+
+	// Find nodes at distance K
+	void findNodesInSubtreeAtDistance(const std::shared_ptr<BinaryTreeNode> root, int k, std::vector<int>& vec)
+	{
+		if (root == nullptr || k < 0) return;
+
+		if (root->data == k)
+		{
+			vec.emplace_back(root->data);
+			return;
+		}
+
+		findNodesInSubtreeAtDistance(root->left, k - 1, vec);
+		findNodesInSubtreeAtDistance(root->right, k - 1, vec);
+	}
+
+
+	// Returns all nodes at distance K from Root
+	int findNodesAtK(const std::shared_ptr<BinaryTreeNode> root, const std::shared_ptr<BinaryTreeNode> target, int k, std::vector<int>& vec)
+	{
+		if (root == nullptr) return -1;
+
+		if (root == target)
+		{
+			findNodesInSubtreeAtDistance(root, k, vec);
+			return 0;
+		}
+
+		int dl = findNodesAtK(root->left, target, k, vec);
+		if (dl != -1)
+		{
+			if (dl + 1 == k) vec.emplace_back();
+		}
+		findNodesAtK(root->right, target, k, vec);
 	}
 
 	// Sum of nodes present at level N
@@ -298,6 +475,65 @@ namespace BinaryTree
 		return std::max(curh, std::max(lh, rh));
 	}
 
+	// Returns distance between root and child node
+	int findDistance(const std::shared_ptr<BinaryTreeNode> root, int k, int currentDistance)
+	{
+		if (root == nullptr) return -1;
+		if (root->data == k) return currentDistance;
+
+		int left = findDistance(root->left, k, currentDistance + 1);
+		if (left != -1) return left;
+
+		return findDistance(root->right, k, currentDistance + 1);
+	}
+
+	// Calculates distance between two nodes
+	int distanceBetweenNodes(const std::shared_ptr<BinaryTreeNode> root, int n1, int n2)
+	{
+		std::shared_ptr<BinaryTreeNode> lca = lowestCommonAncestor(root, n1, n2);
+
+		int d1 = findDistance(root, n1, 0);
+		int d2 = findDistance(root, n2, 0);
+
+		if (d1 != -1 && d2 != -1) return d1 + d2;
+		return -1;
+	}
+
+
+	// Checks if the Binary Tree is balanced i.e. | no. of left nodes - no. of right nodes | <= 1
+	bool isBalanced(const std::shared_ptr<BinaryTreeNode> root)
+	{
+		if (root == nullptr)
+			return true;
+
+		if (!isBalanced(root->left)) return false;
+		if (!isBalanced(root->right)) return false;
+
+		int lh = height(root->left);
+		int rh = height(root->right);
+
+		if (std::abs(rh - lh) <= 1) return true;
+		return false;
+	}
+
+	bool isBalanced(const std::shared_ptr<BinaryTreeNode> root, int* height)
+	{
+		if (root == nullptr)
+		{
+			height = 0;
+			return true;
+		}
+
+		int lh = 0, rh = 0;
+		if (!isBalanced(root->left, &lh)) return false;
+		if (!isBalanced(root->right, &rh)) return false;
+
+		*height = std::max(lh, rh) + 1;
+
+		if (std::abs(lh - rh) <= 1) return true;
+		return false;
+	}
+
 
 	// Returns a Binary Tree Root Pointer built from preorder and inorder array of the tree
 	std::shared_ptr<BinaryTreeNode> rootNodeFromPreOrderAndInOrderArray(std::vector<int>& preOrder, std::vector<int>& inOrder, int start, int end)
@@ -335,6 +571,23 @@ namespace BinaryTree
 		return node;
 	}
 
+	// LCA or lowest common ancestor
+	std::shared_ptr<BinaryTreeNode> lowestCommonAncestor(std::shared_ptr<BinaryTreeNode> root, int n1, int n2)
+	{
+		if (root == nullptr) return nullptr;
+		
+		if (root->data == n1 || root->data == n2) return root;
+
+		std::shared_ptr<BinaryTreeNode> left = lowestCommonAncestor(root->left, n1, n2);
+		std::shared_ptr<BinaryTreeNode> right = lowestCommonAncestor(root->right, n1, n2);
+
+		if (left != nullptr && right != nullptr) return root;
+		if (left == nullptr && right == nullptr) return nullptr;
+		if (left != nullptr) return left;
+		return right;
+	}
+
+
 	// Returns a Binary Tree Object built from PreOrder and In Order Arrays of the tree
 	BinaryTree binaryTreeFromPreOrderAndInOrderArray(std::vector<int>& preOrder, std::vector<int>& inOrder)
 	{
@@ -370,10 +623,11 @@ void testBinaryTree()
 	std::cout << "Sum of All Nodes : " << bt.getSumOfAllNodes() << "\n";
 	std::cout << "Number of nodes : " << bt.getNumberOfNodes() << "\n";
 	std::cout << "Height of tree : " << bt.getHeight() << "\n";
-	std::cout << "Diameter : " << bt.getDiameter() << std::endl;
+	std::cout << "Diameter : " << bt.getDiameter() << "\n";
+	std::cout << "Distance between 35 and 70 : " << bt.getDistanceBetweenNodes(35, 70) << std::endl;
 }
 
-void testBinaryTreeFromPreOrderAndInOrderArray()
+void testBinaryTree2()
 {
 	std::cout << "\n\nExecuting Binary Tree from PreOrder and InOrder Array\n";
 
@@ -383,9 +637,11 @@ void testBinaryTreeFromPreOrderAndInOrderArray()
 	BinaryTree::BinaryTree bt = BinaryTree::binaryTreeFromPreOrderAndInOrderArray(preOrder, inOrder);
 
 	bt.log();
+	bt.logRightView();
+	bt.logLeftView();
 }
 
-void testBinaryTreeFromPostORderAndInOrderArray()
+void testBinaryTree3()
 {
 	std::cout << "\n\nExecuting Binary Tree form PostOrder and InOrder Array\n";
 
@@ -395,11 +651,31 @@ void testBinaryTreeFromPostORderAndInOrderArray()
 	BinaryTree::BinaryTree bt = BinaryTree::binaryTreeFromPostOrderAndInOrderArray(postOrder, inOrder);
 
 	bt.log();
+	std::cout << "Binary Tree is " << ( bt.isTreeBalanced() ? "blanced.\n" : "not balanced.\n");
+
+	std::cout << "Done Sume Replacement\n";
+	bt.doSumReplacement();
+	bt.log();
+}
+
+void testBinaryTree4()
+{
+	BinaryTree::BinaryTree bt(4);
+	bt.root->left = std::shared_ptr<BinaryTree::BinaryTreeNode>(new BinaryTree::BinaryTreeNode(9));
+	bt.root->right = std::shared_ptr<BinaryTree::BinaryTreeNode>(new BinaryTree::BinaryTreeNode(5));
+	bt.root->left->left = std::shared_ptr<BinaryTree::BinaryTreeNode>(new BinaryTree::BinaryTreeNode(1));
+	bt.root->left->right = std::shared_ptr<BinaryTree::BinaryTreeNode>(new BinaryTree::BinaryTreeNode(3));
+	bt.root->right->right = std::shared_ptr<BinaryTree::BinaryTreeNode>(new BinaryTree::BinaryTreeNode(6));
+
+	std::cout << std::endl;
+	bt.flatten();
+	bt.logPreOrderTraversal();
 }
 
 int main()
 {
 	testBinaryTree();
-	testBinaryTreeFromPreOrderAndInOrderArray();
-	testBinaryTreeFromPostORderAndInOrderArray();
+	testBinaryTree2();
+	testBinaryTree3();
+	testBinaryTree4();
 }
