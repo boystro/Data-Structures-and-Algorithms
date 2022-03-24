@@ -137,6 +137,7 @@ class BinaryTree:
 		base_height = [0]
 		return balance(self.root, base_height)
 
+
 def main():
 	bt = BinaryTree(50)
 	bt.root.left = BinaryTreeNode(25)

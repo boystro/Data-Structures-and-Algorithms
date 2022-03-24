@@ -9,10 +9,6 @@
 - Trees
 - Heaps
 - Graphs
-### __Explanation__
-
-
----
 ## __Algorithms__
 - Binary Search Algorithm
 - Breadth First Search (BFS) Algorithm
