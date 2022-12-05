@@ -1,5 +1,4 @@
 # __Data Structures and Algorithms__
----
 ## __Data Structures__
 - Arrays
 - Linked Lists
