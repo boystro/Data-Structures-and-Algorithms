@@ -4,6 +4,7 @@
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
+#include <queue>
 
 struct Edge
 {
@@ -60,7 +61,7 @@ struct Graph
     }
   }
 
-  std::vector<int> GetDFSSequence()
+  std::vector<int> GetBFSSequence()
   {
     int first;
     for (auto pair : adjacencyList) 
@@ -68,24 +69,37 @@ struct Graph
       first = pair.first;
       break;
     }
-    return GetDFSSequence(first);
+    return GetBFSSequence(first);
   }
 
-  std::vector<int> GetDFSSequence(int root)
+  std::vector<int> GetBFSSequence(int root)
   {
     std::vector<int> sequence;
-    dfsTraversal(sequence, root);
-    return sequence;
-  }
 
-private:
-  void dfsTraversal(std::vector<int>& sequence, int root)
-  {
-    if (std::find(sequence.begin(), sequence.end(), root) != sequence.end()) return;
-    sequence.push_back(root);
-    for (Edge edge : adjacencyList[root]) {
-      dfsTraversal(sequence, edge.to);
+    if (adjacencyList.begin() == adjacencyList.end()) {
+      return sequence;
     }
+
+    std::queue<int> q;
+    for (std::pair<int, std::vector<Edge>> pair : adjacencyList) {
+      q.push(pair.first);
+      break;
+    }
+
+    while (!q.empty()) {
+      if (std::find(sequence.cbegin(), sequence.cend(), q.front()) != sequence.cend()) {
+        q.pop();
+        continue;
+      }
+      sequence.emplace_back(q.front());
+      for (Edge edge : adjacencyList[q.front()]) {
+        if (std::find(sequence.cbegin(), sequence.cend(), edge.to) == sequence.cend())
+          q.push(edge.to);
+      }
+      q.pop();
+    }
+
+    return sequence;
   }
 };
 
@@ -105,7 +119,7 @@ int main()
 
   gr.PrintAdjacencyList();
 
-  for (int val : gr.GetDFSSequence())
+  for (int val : gr.GetBFSSequence())
   {
     std::cout << val << " ";
   }
